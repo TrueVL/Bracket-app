@@ -20,6 +20,8 @@ Make playoff brackets for every major North American league, share them with you
    npm run dev
    ```
 
+   **Windows shortcut:** skip the terminal and double-click `start-windows.cmd` in the project folder instead.
+
    The first run installs the libraries automatically, which takes a minute. On a desktop computer your browser then opens the site. If it doesn't, go to **http://localhost:5173**.
 5. Keep the terminal window open while you use the site. Closing it, or pressing Ctrl+C, stops the site.
 
@@ -29,6 +31,7 @@ Data is stored in SQLite at `data/bracket.db`. The API runs on port 3001 behind 
 
 | What you see | Fix |
 | --- | --- |
+| `npm.ps1 cannot be loaded because running scripts is disabled` (PowerShell) | Type `npm.cmd run dev` instead, or double-click `start-windows.cmd`. To fix it for good, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once and answer `Y`. |
 | `'npm' is not recognized…` | Node.js isn't installed, or the terminal was opened before installing it. Install it, then open a new terminal. |
 | `Could not read package.json` / `ENOENT` | The terminal isn't in the project folder. `cd` into the folder that contains `package.json`. |
 | `Your Node.js is version …` | Install the current LTS from nodejs.org, then open a new terminal. |
