@@ -38,6 +38,8 @@ export interface AppOptions {
   db: DB;
   /** Directory with the built client; served when present. */
   clientDir?: string;
+  /** In development the site is served by Vite; send page requests there. */
+  devClientUrl?: string;
   /** Force the Secure cookie flag on/off. By default it follows the request (HTTPS or not). */
   secureCookies?: boolean;
 }
@@ -46,7 +48,7 @@ const userDTO = (u: UserRow): UserDTO => ({ id: u.id, username: u.username, disp
 
 const inviteCode = () => newId(8).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
 
-export function createApp({ db, clientDir, secureCookies }: AppOptions) {
+export function createApp({ db, clientDir, devClientUrl, secureCookies }: AppOptions) {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
@@ -333,10 +335,27 @@ export function createApp({ db, clientDir, secureCookies }: AppOptions) {
 
   app.use('/api', api);
 
-  if (clientDir && fs.existsSync(path.join(clientDir, 'index.html'))) {
+  if (devClientUrl) {
+    app.get('/{*path}', (req, res) => {
+      res.redirect(devClientUrl + req.originalUrl);
+    });
+  } else if (clientDir && fs.existsSync(path.join(clientDir, 'index.html'))) {
     app.use(express.static(clientDir, { index: false, maxAge: '1h' }));
     app.get('/{*path}', (_req, res) => {
       res.sendFile(path.join(clientDir, 'index.html'));
+    });
+  } else {
+    app.get('/{*path}', (_req, res) => {
+      res
+        .status(503)
+        .type('html')
+        .send(
+          '<!doctype html><meta charset="utf-8"><title>Bracket Club</title>' +
+            '<body style="font-family:system-ui;max-width:560px;margin:60px auto;padding:0 16px;line-height:1.5">' +
+            '<h1>The site isn’t built yet</h1><p>This is the app’s server, but the website files haven’t been built.</p>' +
+            '<ul><li>For development, run <code>npm run dev</code> and open <a href="http://localhost:5173">http://localhost:5173</a>.</li>' +
+            '<li>To run the real site, run <code>npm run build</code> and then <code>npm start</code>.</li></ul></body>',
+        );
     });
   }
 

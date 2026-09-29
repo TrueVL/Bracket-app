@@ -9,6 +9,10 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Fail loudly instead of silently moving to another port.
+    strictPort: true,
+    // Open the site in the browser on desktop machines (not on servers / containers).
+    open: process.platform === 'win32' || process.platform === 'darwin' || Boolean(process.env.DISPLAY),
     proxy: {
       '/api': 'http://localhost:3001',
     },

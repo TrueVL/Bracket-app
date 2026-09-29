@@ -11,14 +11,29 @@ Make playoff brackets for every major North American league, share them with you
 
 ## Getting started
 
-Requires Node.js 20 or newer.
+1. Install **Node.js 22.12 or newer**. Get the "LTS" version from https://nodejs.org.
+2. Download this repo: use `git clone`, or on GitHub click **Code → Download ZIP** and unzip it.
+3. Open a terminal **in the project folder**, the one that contains `package.json`. Windows: open the folder in File Explorer, click the address bar, type `cmd` and press Enter. Mac: right-click the folder and choose *New Terminal at Folder*.
+4. Run:
 
-```bash
-npm install
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
 
-Open http://localhost:5173. The API runs on port 3001 and Vite proxies `/api` to it. Data is stored in SQLite at `data/bracket.db`.
+   The first run installs the libraries automatically, which takes a minute. On a desktop computer your browser then opens the site. If it doesn't, go to **http://localhost:5173**.
+5. Keep the terminal window open while you use the site. Closing it, or pressing Ctrl+C, stops the site.
+
+Data is stored in SQLite at `data/bracket.db`. The API runs on port 3001 behind the scenes, and Vite proxies `/api` to it.
+
+### If it doesn't work
+
+| What you see | Fix |
+| --- | --- |
+| `'npm' is not recognized…` | Node.js isn't installed, or the terminal was opened before installing it. Install it, then open a new terminal. |
+| `Could not read package.json` / `ENOENT` | The terminal isn't in the project folder. `cd` into the folder that contains `package.json`. |
+| `Your Node.js is version …` | Install the current LTS from nodejs.org, then open a new terminal. |
+| `Port … is already in use` | The site is already running in another window. Use that one, or close it first. |
+| Browser says *This site can't be reached* | The terminal window was closed, or the command stopped with an error. Check the terminal. |
 
 ### How a pool works
 
@@ -43,7 +58,7 @@ Each correct winner is worth the points set for its round. The defaults double e
 | --- | --- |
 | `npm run dev` | API + Vite dev server with hot reload |
 | `npm run build` | Build the frontend into `dist/client` |
-| `npm start` | Production server: API + built frontend on one port |
+| `npm start` | Production server: API + built frontend on one port (builds first if needed) |
 | `npm test` | Unit and API tests (Vitest) |
 | `npm run typecheck` | TypeScript check |
 | `npm run check` | All of the above |

@@ -27,16 +27,18 @@
   },
   "description": "Playoff bracket pools for the NFL, NBA, NHL, MLB, MLS, WNBA, March Madness and more.",
   "scripts": {
+    "predev": "node scripts/doctor.mjs dev",
     "dev": "concurrently -k -n api,web -c blue,green \"npm:dev:server\" \"npm:dev:client\"",
-    "dev:server": "tsx watch --clear-screen=false src/server/index.ts",
+    "dev:server": "tsx watch --clear-screen=false src/server/index.ts --dev",
     "dev:client": "vite",
     "build": "vite build",
+    "prestart": "node scripts/doctor.mjs start",
     "start": "tsx src/server/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check": "npm run typecheck && npm test && npm run build"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12"
   }
 }
