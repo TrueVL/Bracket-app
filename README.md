@@ -11,7 +11,7 @@ Make playoff brackets for every major North American league, share them with you
 
 ## Getting started
 
-1. Install **Node.js 22.12 or newer**. Get the "LTS" version from https://nodejs.org.
+1. Install **Node.js 22.13 or newer**. Get the "LTS" version from https://nodejs.org.
 2. Download this repo: use `git clone`, or on GitHub click **Code → Download ZIP** and unzip it.
 3. Open a terminal **in the project folder**, the one that contains `package.json`. Windows: open the folder in File Explorer, click the address bar, type `cmd` and press Enter. Mac: right-click the folder and choose *New Terminal at Folder*.
 4. Run:
@@ -25,7 +25,7 @@ Make playoff brackets for every major North American league, share them with you
    The first run installs the libraries automatically, which takes a minute. On a desktop computer your browser then opens the site. If it doesn't, go to **http://localhost:5173**.
 5. Keep the terminal window open while you use the site. Closing it, or pressing Ctrl+C, stops the site.
 
-Data is stored in SQLite at `data/bracket.db`. The API runs on port 3001 behind the scenes, and Vite proxies `/api` to it.
+Data is stored in SQLite at `data/bracket.db`, using the database built into Node.js, so nothing needs compiling. The API runs on port 3001 behind the scenes, and Vite proxies `/api` to it.
 
 ### If it doesn't work
 
@@ -100,7 +100,7 @@ src/
     teams.ts      team lists and colours
     bracket.ts    pick resolution, re-seeding, scoring, ranking
     layout.ts     positions for the two-sided bracket drawing
-  server/     Express + better-sqlite3 API (auth, pools, brackets, invites)
+  server/     Express API on Node's built-in SQLite (auth, pools, brackets, invites)
   client/     React app (Vite)
 tests/        engine and API tests
 ```

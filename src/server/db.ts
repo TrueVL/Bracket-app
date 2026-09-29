@@ -1,8 +1,49 @@
-import Database from 'better-sqlite3';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
-export type DB = Database.Database;
+/**
+ * SQLite is built into Node.js (22.13+), so there is no native module to
+ * compile on install. Node prints an "experimental" notice the first time
+ * it loads; it's noise for users of this app, so it's filtered out here.
+ */
+function loadSqlite(): typeof import('node:sqlite') {
+  const emit = process.emitWarning;
+  process.emitWarning = function (warning: string | Error, ...rest: unknown[]) {
+    const message = typeof warning === 'string' ? warning : warning.message;
+    if (message.includes('SQLite')) return;
+    return (emit as (...args: unknown[]) => void).call(process, warning, ...rest);
+  } as typeof process.emitWarning;
+  try {
+    return createRequire(import.meta.url)('node:sqlite');
+  } finally {
+    process.emitWarning = emit;
+  }
+}
+
+/** The slice of node:sqlite this app uses; rows are cast to the *Row types below. */
+export interface Statement {
+  get(...params: unknown[]): unknown;
+  all(...params: unknown[]): unknown[];
+  run(...params: unknown[]): { changes: number | bigint; lastInsertRowid: number | bigint };
+}
+export interface DB {
+  prepare(sql: string): Statement;
+  exec(sql: string): void;
+  close(): void;
+}
+
+/** Run `fn` inside a transaction, rolling back if it throws. */
+export function transaction(db: DB, fn: () => void) {
+  db.exec('BEGIN');
+  try {
+    fn();
+    db.exec('COMMIT');
+  } catch (err) {
+    db.exec('ROLLBACK');
+    throw err;
+  }
+}
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS users (
@@ -59,9 +100,9 @@ CREATE TABLE IF NOT EXISTS brackets (
 
 export function openDb(file = process.env.DATABASE_PATH ?? path.resolve('data', 'bracket.db')): DB {
   if (file !== ':memory:') fs.mkdirSync(path.dirname(file), { recursive: true });
-  const db = new Database(file);
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
+  const { DatabaseSync } = loadSqlite();
+  const db = new DatabaseSync(file) as unknown as DB;
+  db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
   db.exec(SCHEMA);
   return db;
 }

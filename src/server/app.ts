@@ -19,7 +19,7 @@ import {
   userForToken,
   verifyPassword,
 } from './auth';
-import type { BracketRow, DB, PoolRow, UserRow } from './db';
+import { transaction, type BracketRow, type DB, type PoolRow, type UserRow } from './db';
 import {
   bracketDTO,
   bracketView,
@@ -170,13 +170,13 @@ export function createApp({ db, clientDir, devClientUrl, secureCookies }: AppOpt
       created_at: now,
       updated_at: now,
     };
-    db.transaction(() => {
+    transaction(db, () => {
       db.prepare(
         `INSERT INTO pools (id, name, template_id, season, owner_id, invite_code, field_json, results_json, scoring_json, lock_at, tiebreaker_actual, created_at, updated_at)
          VALUES (@id, @name, @template_id, @season, @owner_id, @invite_code, @field_json, @results_json, @scoring_json, @lock_at, @tiebreaker_actual, @created_at, @updated_at)`,
       ).run(row);
       db.prepare('INSERT INTO pool_members (pool_id, user_id, joined_at) VALUES (?, ?, ?)').run(row.id, req.user!.id, now);
-    })();
+    });
     res.status(201).json({ pool: poolDetail(db, hydratePool(row), req.user!) });
   });
 
@@ -202,7 +202,16 @@ export function createApp({ db, clientDir, devClientUrl, secureCookies }: AppOpt
     db.prepare(
       `UPDATE pools SET name = @name, season = @season, lock_at = @lock_at, scoring_json = @scoring_json,
        tiebreaker_actual = @tiebreaker_actual, field_json = @field_json, updated_at = @updated_at WHERE id = @id`,
-    ).run(next);
+    ).run({
+      id: next.id,
+      name: next.name,
+      season: next.season,
+      lock_at: next.lock_at,
+      scoring_json: next.scoring_json,
+      tiebreaker_actual: next.tiebreaker_actual,
+      field_json: next.field_json,
+      updated_at: next.updated_at,
+    });
     res.json({ pool: poolDetail(db, loadPool(db, pool.row.id), req.user!) });
   });
 
@@ -239,10 +248,10 @@ export function createApp({ db, clientDir, devClientUrl, secureCookies }: AppOpt
     const isOwner = pool.row.owner_id === req.user!.id;
     if (target === pool.row.owner_id) throw bad('The commissioner can’t leave. Delete the pool instead.');
     if (target !== req.user!.id && !isOwner) throw new HttpError(403, 'Only the commissioner can remove members.');
-    db.transaction(() => {
+    transaction(db, () => {
       db.prepare('DELETE FROM brackets WHERE pool_id = ? AND user_id = ?').run(pool.row.id, target);
       db.prepare('DELETE FROM pool_members WHERE pool_id = ? AND user_id = ?').run(pool.row.id, target);
-    })();
+    });
     res.json({ ok: true });
   });
 

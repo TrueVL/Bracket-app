@@ -23,33 +23,34 @@ function npm(args) {
   return r.status === 0;
 }
 
-// 1. Node version: Vite, better-sqlite3 and friends need 22.12 or newer.
+// 1. Node version: the built-in SQLite database and Vite need 22.13 or newer.
 const [major, minor] = process.versions.node.split('.').map(Number);
-if (major < 22 || (major === 22 && minor < 12)) {
+if (major < 22 || (major === 22 && minor < 13)) {
   fail([
-    `Your Node.js is version ${process.versions.node}, but this app needs 22.12 or newer.`,
+    `Your Node.js is version ${process.versions.node}, but this app needs 22.13 or newer.`,
     'Download the "LTS" version from https://nodejs.org, install it,',
     'then close this window, open a new one and try again.',
   ]);
 }
 
 // 2. Libraries: install them automatically the first time.
-const needed = ['vite', 'concurrently', 'tsx', 'better-sqlite3', 'express', 'react'];
+const needed = ['vite', 'concurrently', 'tsx', 'express', 'react', 'react-router-dom'];
 const missing = needed.filter((p) => !fs.existsSync(path.join(root, 'node_modules', p, 'package.json')));
 if (missing.length) {
   console.log('\n  First run: installing the libraries the app needs (this takes a minute)…\n');
   if (!npm(['install'])) fail(['"npm install" failed. Scroll up for the error, or send it to whoever is helping you.']);
 }
 
-// 3. The database driver must load on this computer.
+// 3. The database is SQLite built into Node.js (nothing to compile).
 try {
-  const Database = createRequire(path.join(root, 'package.json'))('better-sqlite3');
-  new Database(':memory:').close();
+  process.removeAllListeners('warning'); // hide Node's "experimental" notice for this check
+  const { DatabaseSync } = createRequire(import.meta.url)('node:sqlite');
+  new DatabaseSync(':memory:').close();
 } catch (err) {
   fail([
-    'The database library (better-sqlite3) could not load on this computer:',
+    'Node.js’s built-in database (node:sqlite) is not available:',
     String(err?.message ?? err).split('\n')[0],
-    'Try deleting the "node_modules" folder and running "npm install" again.',
+    'Install the current "LTS" version from https://nodejs.org and try again.',
   ]);
 }
 

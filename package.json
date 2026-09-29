@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "better-sqlite3": "^13.0.3",
     "express": "^5.2.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -12,7 +11,6 @@
     "tsx": "^4.23.15"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^9.6.0",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.3",
     "@types/react": "^19.3.0",
@@ -39,6 +37,6 @@
     "check": "npm run typecheck && npm test && npm run build"
   },
   "engines": {
-    "node": ">=22.12"
+    "node": ">=22.13"
   }
 }
