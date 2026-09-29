@@ -71,7 +71,7 @@ This works on any host with persistent volumes, such as Fly.io, Railway or a sma
 | --- | --- | --- |
 | `PORT` | `3001` | |
 | `DATABASE_PATH` | `data/bracket.db` | SQLite file; back it up occasionally |
-| `SECURE_COOKIES` | `true` in production | Set to `false` only if you serve over plain HTTP |
+| `SECURE_COOKIES` | automatic | Login cookies are marked Secure when the site is reached over HTTPS. Set `true`/`false` to force it |
 
 ## Project layout
 

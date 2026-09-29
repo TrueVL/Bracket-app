@@ -4,14 +4,14 @@ import { createApp } from './app';
 import { openDb } from './db';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const production = process.env.NODE_ENV === 'production';
 const port = Number(process.env.PORT ?? 3001);
 
 const db = openDb();
 const app = createApp({
   db,
   clientDir: path.join(root, 'dist', 'client'),
-  secureCookies: process.env.SECURE_COOKIES ? process.env.SECURE_COOKIES === 'true' : production,
+  // Unset = automatic: Secure cookies whenever the site is reached over HTTPS.
+  secureCookies: process.env.SECURE_COOKIES ? process.env.SECURE_COOKIES === 'true' : undefined,
 });
 
 const server = app.listen(port, () => {

@@ -38,6 +38,7 @@ export interface AppOptions {
   db: DB;
   /** Directory with the built client; served when present. */
   clientDir?: string;
+  /** Force the Secure cookie flag on/off. By default it follows the request (HTTPS or not). */
   secureCookies?: boolean;
 }
 
@@ -45,7 +46,7 @@ const userDTO = (u: UserRow): UserDTO => ({ id: u.id, username: u.username, disp
 
 const inviteCode = () => newId(8).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
 
-export function createApp({ db, clientDir, secureCookies = false }: AppOptions) {
+export function createApp({ db, clientDir, secureCookies }: AppOptions) {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
@@ -100,7 +101,7 @@ export function createApp({ db, clientDir, secureCookies = false }: AppOptions) 
       'INSERT INTO users (id, username, display_name, password_hash, created_at) VALUES (@id, @username, @display_name, @password_hash, @created_at)',
     ).run(user);
     const { token, expires } = createSession(db, user.id);
-    setSessionCookie(res, token, expires, secureCookies);
+    setSessionCookie(res, token, expires, secureCookies ?? req.secure);
     res.status(201).json({ user: userDTO(user) });
   });
 
@@ -112,7 +113,7 @@ export function createApp({ db, clientDir, secureCookies = false }: AppOptions) 
       throw new HttpError(401, 'Wrong username or password.');
     }
     const { token, expires } = createSession(db, user.id);
-    setSessionCookie(res, token, expires, secureCookies);
+    setSessionCookie(res, token, expires, secureCookies ?? req.secure);
     res.json({ user: userDTO(user) });
   });
 

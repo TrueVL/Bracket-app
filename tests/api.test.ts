@@ -167,3 +167,17 @@ describe('robustness', () => {
     expect(me.body.user).toBeNull();
   });
 });
+
+describe('session cookie', () => {
+  it('is marked Secure only when the request came over HTTPS', async () => {
+    const plain = await request(app).post('/api/auth/signup').set(H).send({ username: 'plain', password: 'password123' });
+    expect(plain.headers['set-cookie'][0]).not.toMatch(/Secure/);
+    const https = await request(app)
+      .post('/api/auth/signup')
+      .set(H)
+      .set('X-Forwarded-Proto', 'https')
+      .send({ username: 'secure', password: 'password123' });
+    expect(https.headers['set-cookie'][0]).toMatch(/Secure/);
+    expect(https.headers['set-cookie'][0]).toMatch(/HttpOnly/);
+  });
+});
