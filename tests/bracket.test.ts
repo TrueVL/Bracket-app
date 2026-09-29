@@ -12,6 +12,7 @@ import {
   scoreBracket,
 } from '../src/shared/bracket';
 import { layoutBracket } from '../src/shared/layout';
+import { eligibleTeams, LEAGUE_TEAMS } from '../src/shared/teams';
 import { TEMPLATES, getTemplate, seedOrder } from '../src/shared/templates';
 import type { Picks, Template } from '../src/shared/types';
 
@@ -166,5 +167,40 @@ describe('rankEntries', () => {
       ['d', 4],
       ['e', 4],
     ]);
+  });
+});
+
+describe('eligibleTeams', () => {
+  const slot = (t: Template, id: string) => t.slots.find((s) => s.id === id)!;
+
+  it('only offers a seed’s own conference', () => {
+    const mlb = getTemplate('mlb')!;
+    const al = eligibleTeams(mlb, slot(mlb, 'AL1'));
+    expect(al).toHaveLength(15);
+    expect(al.every((x) => x.conf === 'AL')).toBe(true);
+    expect(al.some((x) => x.key === 'NYY')).toBe(true);
+    expect(al.some((x) => x.key === 'LAD')).toBe(false);
+    const nfc = eligibleTeams(getTemplate('nfl')!, slot(getTemplate('nfl')!, 'NFC3'));
+    expect(nfc.every((x) => x.conf === 'NFC')).toBe(true);
+    for (const id of ['nba', 'mls']) {
+      const t = getTemplate(id)!;
+      expect(eligibleTeams(t, slot(t, 'W1')).every((x) => x.conf === 'West')).toBe(true);
+    }
+  });
+
+  it('limits NHL division spots to that division but not wild cards', () => {
+    const nhl = getTemplate('nhl')!;
+    const atl2 = eligibleTeams(nhl, slot(nhl, 'EA2'));
+    expect(atl2).toHaveLength(8);
+    expect(atl2.every((x) => x.div === 'Atlantic')).toBe(true);
+    const wc = eligibleTeams(nhl, slot(nhl, 'EAWC'));
+    expect(wc).toHaveLength(16);
+    expect(wc.every((x) => x.conf === 'East')).toBe(true);
+  });
+
+  it('offers every team when there are no conferences', () => {
+    const wnba = getTemplate('wnba')!;
+    expect(eligibleTeams(wnba, wnba.slots[0])).toHaveLength(LEAGUE_TEAMS.wnba.length);
+    expect(eligibleTeams(getTemplate('custom8')!, getTemplate('custom8')!.slots[0])).toEqual([]);
   });
 });

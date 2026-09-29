@@ -1313,34 +1313,54 @@ button.team-row:hover {
 .mark.bad {
   color: var(--bad);
 }
-.games {
+.series {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 5px 6px 6px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 0 0 8px 8px;
+}
+.series-row {
   display: flex;
   align-items: center;
   gap: 3px;
-  padding: 4px 6px;
-  border-top: 1px solid var(--border);
-  font-size: 0.72rem;
-  color: var(--muted);
 }
-.games span {
+.series-row .badge-sm {
+  min-width: 32px;
+  height: 20px;
+  font-size: 0.6rem;
   margin-right: 2px;
 }
-.games button {
+.series-row button {
   flex: 1;
   min-width: 0;
   height: 22px;
-  border: 1px solid var(--border);
+  padding: 0;
+  border: 1px solid var(--border-strong);
   border-radius: 5px;
   background: var(--surface);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   cursor: pointer;
-  padding: 0;
 }
-.games button.on {
+.series-row button:hover {
+  border-color: var(--accent);
+}
+.series-row button.on {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
+}
+.list-matches .series {
+  gap: 6px;
+  padding: 8px;
+}
+.list-matches .series-row button {
+  height: 34px;
+  font-size: 0.9rem;
 }
 .games-note,
 .actual-note {

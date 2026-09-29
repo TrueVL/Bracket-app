@@ -5,7 +5,7 @@ Make playoff brackets for every major North American league, share them with you
 - **Leagues:** NFL, NBA, NHL (Stanley Cup), MLB, MLS, WNBA, the College Football Playoff, the NCAA men's and women's tournaments (64 teams), plus custom 4/8/16-team brackets for anything else.
 - **Real formats:** NFL re-seeding after the Wild Card round, MLB and CFP byes, the MLS wild card game, NHL divisional brackets with wild cards, best-of-N series.
 - **Pools:** create a pool, drop the playoff teams into their seeds, and share one invite link. Everyone fills out a bracket before the lock time. Picks stay hidden until then.
-- **Competition:** the commissioner clicks winners as games finish, and the leaderboard updates with points, max possible points and ranks. You can configure points per round, an optional bonus for calling series length, and a tiebreaker.
+- **Competition:** the commissioner clicks winners as games finish, and the leaderboard updates with points, max possible points and ranks. You can configure points per round, an optional bonus for calling the exact series score, and a tiebreaker.
 - **Sharing:** every bracket has its own link. Once picks lock, anyone with the link can view it.
 - Works on phones: there's a round-by-round view for small screens, plus light and dark mode.
 
@@ -51,7 +51,7 @@ Data is stored in SQLite at `data/bracket.db`, using the database built into Nod
 
 Each correct winner is worth the points set for its round. The defaults double every round, and the commissioner can change them any time. Picks are graded by round: you get the points if the team you picked really won a game in that round. This keeps re-seeded NFL brackets fair.
 
-- **Series length bonus** (NBA, NHL, MLB, MLS Round One, WNBA): optional extra points for also picking how many games a series lasts.
+- **Series score bonus** (NBA, NHL, MLB, MLS Round One, WNBA): each series card has one-tap score buttons for both teams (for example NYY 2–0 / 2–1 and BOS 2–0 / 2–1 in a best-of-3). Calling the exact score earns optional extra points.
 - **Max** is the most points a bracket can still reach, given which teams have been eliminated.
 - **Ties** are broken by how close your tiebreaker guess is to the actual number (for example, total points in the Super Bowl). The commissioner enters that number with the results.
 

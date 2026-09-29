@@ -181,3 +181,26 @@ describe('session cookie', () => {
     expect(https.headers['set-cookie'][0]).toMatch(/HttpOnly/);
   });
 });
+
+describe('team eligibility', () => {
+  it('rejects a team from the other league/conference', async () => {
+    const owner = await signup('owner');
+    const { pool } = (await owner.post('/api/pools').set(H).send({ name: 'October', templateId: 'mlb' })).body;
+    const bad = await owner.patch(`/api/pools/${pool.id}`).set(H).send({ field: { teams: { AL1: { key: 'LAD' } } } });
+    expect(bad.status).toBe(400);
+    expect(bad.body.error).toMatch(/Los Angeles Dodgers isn't in the American League/);
+    const ok = await owner.patch(`/api/pools/${pool.id}`).set(H).send({ field: { teams: { AL1: { key: 'NYY' }, NL1: { key: 'LAD' } } } });
+    expect(ok.status).toBe(200);
+    expect(ok.body.pool.field.teams.AL1.name).toBe('New York Yankees');
+  });
+
+  it('keeps NHL division spots inside the division', async () => {
+    const owner = await signup('owner');
+    const { pool } = (await owner.post('/api/pools').set(H).send({ name: 'Cup', templateId: 'nhl' })).body;
+    const bad = await owner.patch(`/api/pools/${pool.id}`).set(H).send({ field: { teams: { EA1: { key: 'NYR' } } } });
+    expect(bad.status).toBe(400);
+    expect(bad.body.error).toMatch(/Atlantic Division/);
+    const wc = await owner.patch(`/api/pools/${pool.id}`).set(H).send({ field: { teams: { EAWC: { key: 'NYR' } } } });
+    expect(wc.status).toBe(200);
+  });
+});

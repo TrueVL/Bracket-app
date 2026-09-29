@@ -57,7 +57,7 @@ export function ScoringEditor({ template, value, onChange }: { template: Templat
       </table>
       {hasSeries && (
         <label className="field inline-field">
-          <span className="field-label">Series length bonus</span>
+          <span className="field-label">Exact series score bonus</span>
           <input
             type="number"
             min={0}
@@ -67,7 +67,7 @@ export function ScoringEditor({ template, value, onChange }: { template: Templat
             onChange={(e) => onChange({ ...value, seriesBonus: num(e.target.value) })}
           />
           <span className="field-hint">
-            Extra points for also calling how many games a series lasts. Set to 0 to turn off series-length picks.
+            Extra points for also calling the exact series score, like 4–2. Set to 0 to hide the series score buttons.
           </span>
         </label>
       )}

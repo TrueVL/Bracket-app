@@ -55,7 +55,7 @@ function ResultsEditor({ pool, template, onSaved }: { pool: PoolDetail; template
         </div>
       )}
       <p className="muted">
-        Click the winner of each game or series as it finishes. Click a winner again to undo. The leaderboard updates as soon as you save.
+        Click the winner of each game as it finishes. For a series, tap the final series score under the teams (like 4–2). Click a winner again to undo. The leaderboard updates as soon as you save.
       </p>
       <Bracket
         template={template}
@@ -64,7 +64,7 @@ function ResultsEditor({ pool, template, onSaved }: { pool: PoolDetail; template
         mode="results"
         showGames={pool.scoring.seriesBonus > 0}
         onPick={(m, s) => change(results.winners[m] === s ? clearPick(template, results, m) : applyPick(template, results, m, s))}
-        onGames={(m, g) => change(applyGames(template, results, m, g))}
+        onSeries={(m, s, g) => change(applyGames(template, applyPick(template, results, m, s), m, g))}
       />
       <div className="card grid-2 align-end">
         <Field label="Tiebreaker result" hint={template.tiebreaker}>

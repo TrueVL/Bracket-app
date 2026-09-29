@@ -1,4 +1,4 @@
-import type { LeagueId, Team } from './types';
+import type { LeagueId, Slot, Team, Template } from './types';
 
 export interface LeagueTeam extends Team {
   key: string;
@@ -227,6 +227,16 @@ export const LEAGUE_TEAMS: Record<LeagueId, LeagueTeam[]> = {
   mls: MLS,
   wnba: WNBA,
 };
+
+/**
+ * League teams that can fill a slot: only the slot's conference (AL seeds
+ * get AL teams, and so on), and only its division when the slot is tied to one.
+ */
+export function eligibleTeams(t: Template, slot: Slot): LeagueTeam[] {
+  if (!t.teamList) return [];
+  const conf = t.groups.find((g) => g.id === slot.group)?.conf;
+  return LEAGUE_TEAMS[t.teamList].filter((x) => (!conf || x.conf === conf) && (!slot.division || x.div === slot.division));
+}
 
 /** Pick a readable text colour (dark or white) for a team colour. */
 export function textOn(hex: string): string {

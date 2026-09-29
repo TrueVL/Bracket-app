@@ -1,5 +1,5 @@
-import { LEAGUE_TEAMS } from '../shared/teams';
-import type { Field, Scoring, Team, Template } from '../shared/types';
+import { eligibleTeams, LEAGUE_TEAMS } from '../shared/teams';
+import type { Field, Scoring, Slot, Team, Template } from '../shared/types';
 
 export class HttpError extends Error {
   constructor(
@@ -50,12 +50,19 @@ export function scoring(v: unknown, t: Template): Scoring {
   };
 }
 
-function team(v: unknown, t: Template): Team | null {
+function team(v: unknown, t: Template, slot: Slot): Team | null {
   if (!v || typeof v !== 'object') return null;
   const o = v as Record<string, unknown>;
   if (t.teamList && typeof o.key === 'string') {
     const found = LEAGUE_TEAMS[t.teamList].find((x) => x.key === o.key);
-    if (found) return { key: found.key, name: found.name, short: found.short, abbr: found.abbr, color: found.color };
+    if (found) {
+      // League teams must come from the slot's own conference (and division, for NHL division spots).
+      if (!eligibleTeams(t, slot).includes(found)) {
+        const where = slot.division ? `the ${slot.division} Division` : `the ${t.groups.find((g) => g.id === slot.group)?.name}`;
+        throw bad(`${found.name} isn't in ${where}, so it can't be the ${slot.desc}.`);
+      }
+      return { key: found.key, name: found.name, short: found.short, abbr: found.abbr, color: found.color };
+    }
   }
   if (typeof o.name !== 'string' || !o.name.trim()) return null;
   const name = str(o.name, 'Team name', 1, 40);
@@ -73,7 +80,7 @@ export function field(v: unknown, t: Template): Field {
   const input = v as { teams?: Record<string, unknown>; groupNames?: Record<string, unknown> };
   const out: Field = { teams: {} };
   for (const s of t.slots) {
-    const tm = team(input.teams?.[s.id], t);
+    const tm = team(input.teams?.[s.id], t, s);
     if (tm) out.teams[s.id] = tm;
   }
   if (t.renamableGroups && input.groupNames && typeof input.groupNames === 'object') {

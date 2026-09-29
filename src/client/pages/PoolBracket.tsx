@@ -152,7 +152,8 @@ function Editor({ pool, template }: { pool: PoolDetail; template: Template }) {
       <ErrorBox error={error} retry={save} />
       <p className="muted small">
         Click a team to move it on. Changing an early pick clears later picks that depended on it.
-        {showGames && ` Pick series lengths for +${pool.scoring.seriesBonus} bonus points each.`}
+        {showGames &&
+          ` For a series, tap a score under the teams (like 4–2) to pick the winner and how many games each team wins: +${pool.scoring.seriesBonus} bonus points if you get the exact score.`}
         {pool.lockAt && ` Locks ${formatDate(pool.lockAt)} (${relative(pool.lockAt)}).`}
       </p>
       <Bracket
@@ -162,7 +163,7 @@ function Editor({ pool, template }: { pool: PoolDetail; template: Template }) {
         mode="pick"
         showGames={showGames}
         onPick={(m, s) => change(applyPick(template, picks, m, s))}
-        onGames={(m, g) => change(applyGames(template, picks, m, g))}
+        onSeries={(m, s, g) => change(applyGames(template, applyPick(template, picks, m, s), m, g))}
       />
       {bracketId && (
         <p className="muted small center">

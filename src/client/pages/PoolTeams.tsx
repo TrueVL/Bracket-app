@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { PoolDetail } from '../../shared/api';
-import { customTeam, LEAGUE_TEAMS, type LeagueTeam } from '../../shared/teams';
+import { customTeam, eligibleTeams, type LeagueTeam } from '../../shared/teams';
 import type { Field, Slot, Team, Template } from '../../shared/types';
 import { api } from '../api';
 import { TeamBadge } from '../components/Team';
@@ -29,19 +29,21 @@ function SlotRow({
   duplicate: boolean;
   onChange: (t: Team | undefined) => void;
 }) {
-  const list = template.teamList ? LEAGUE_TEAMS[template.teamList] : null;
-  const group = template.groups.find((g) => g.id === slot.group);
+  // Only teams that can fill this seed: AL seeds list AL teams, NHL division spots list that division, etc.
+  const list = useMemo(() => (template.teamList ? eligibleTeams(template, slot) : null), [template, slot]);
   // "Other" was chosen, or the team was typed in / pasted and isn't from the list.
   const [otherChosen, setOtherChosen] = useState(false);
   const custom = Boolean(list) && (otherChosen || Boolean(team && !team.key));
 
-  const confs = useMemo(() => {
-    if (!list) return [];
-    const byConf = new Map<string, LeagueTeam[]>();
-    for (const t of list) byConf.set(t.conf, [...(byConf.get(t.conf) ?? []), t]);
-    // Teams from this slot's conference first.
-    return [...byConf.entries()].sort(([a], [b]) => Number(b === group?.short) - Number(a === group?.short));
-  }, [list, group]);
+  // Group the options by division ("AL East", "AL Central", …) when there is more than one.
+  const sections = useMemo(() => {
+    const byDiv = new Map<string, LeagueTeam[]>();
+    for (const t of list ?? []) {
+      const label = t.div ? `${t.conf} ${t.div}` : t.conf;
+      byDiv.set(label, [...(byDiv.get(label) ?? []), t]);
+    }
+    return [...byDiv.entries()];
+  }, [list]);
 
   const showText = !list || custom;
 
@@ -67,15 +69,21 @@ function SlotRow({
             aria-label={slot.desc}
           >
             <option value="">Choose a team…</option>
-            {confs.map(([conf, teams]) => (
-              <optgroup key={conf} label={conf}>
-                {teams.map((t) => (
+            {sections.length === 1
+              ? sections[0][1].map((t) => (
                   <option key={t.key} value={t.key}>
                     {t.name}
                   </option>
+                ))
+              : sections.map(([label, teams]) => (
+                  <optgroup key={label} label={label}>
+                    {teams.map((t) => (
+                      <option key={t.key} value={t.key}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
-              </optgroup>
-            ))}
             <option value={CUSTOM}>Other team (type it in)…</option>
           </select>
         )}
@@ -194,7 +202,6 @@ function TeamsEditor({ pool, template, onSaved }: { pool: PoolDetail; template: 
   };
 
   const fillGroup = (slots: Slot[], names: string[]) => {
-    const list = template.teamList ? LEAGUE_TEAMS[template.teamList] : null;
     setDirty(true);
     setTeams((prev) => {
       const next = { ...prev };
@@ -202,7 +209,8 @@ function TeamsEditor({ pool, template, onSaved }: { pool: PoolDetail; template: 
         const n = names[i];
         if (!n) return;
         const lower = n.toLowerCase();
-        const found = list?.find(
+        // Match only teams that can fill this seed; anything else becomes a typed-in team.
+        const found = eligibleTeams(template, s).find(
           (t) => t.name.toLowerCase() === lower || t.short.toLowerCase() === lower || t.abbr.toLowerCase() === lower,
         );
         next[s.id] = found ? { key: found.key, name: found.name, short: found.short, abbr: found.abbr, color: found.color } : customTeam(n);

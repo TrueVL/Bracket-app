@@ -23,6 +23,8 @@ export interface Slot {
   label: string;
   /** Longer description for the setup screen. */
   desc: string;
+  /** Only teams from this division may fill the slot (NHL division spots). */
+  division?: string;
 }
 
 export interface Round {
@@ -49,6 +51,8 @@ export interface Group {
   id: string;
   name: string;
   short: string;
+  /** League conference whose teams may fill this group's slots (matches LeagueTeam.conf). */
+  conf?: string;
 }
 
 export type LeagueId = 'nfl' | 'nba' | 'nhl' | 'mlb' | 'mls' | 'wnba';

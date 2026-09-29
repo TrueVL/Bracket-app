@@ -87,8 +87,8 @@ function nfl(): Template {
     description: '14 teams · Wild Card, Divisional (re-seeded), Conference Championships, Super Bowl',
     teamList: 'nfl',
     groups: [
-      { id: 'AFC', name: 'American Football Conference', short: 'AFC' },
-      { id: 'NFC', name: 'National Football Conference', short: 'NFC' },
+      { id: 'AFC', name: 'American Football Conference', short: 'AFC', conf: 'AFC' },
+      { id: 'NFC', name: 'National Football Conference', short: 'NFC', conf: 'NFC' },
     ],
     slots,
     rounds: rounds(
@@ -131,8 +131,8 @@ function nba(): Template {
     description: '16 teams (after the Play-In) · four best-of-seven rounds',
     teamList: 'nba',
     groups: [
-      { id: 'E', name: 'Eastern Conference', short: 'East' },
-      { id: 'W', name: 'Western Conference', short: 'West' },
+      { id: 'E', name: 'Eastern Conference', short: 'East', conf: 'East' },
+      { id: 'W', name: 'Western Conference', short: 'West', conf: 'West' },
     ],
     slots,
     rounds: rounds(
@@ -163,7 +163,7 @@ function wnba(): Template {
     category: 'pro',
     description: '8 teams seeded 1–8 · best-of-3, best-of-5, best-of-7 Finals',
     teamList: 'wnba',
-    groups: [{ id: 'L', name: 'League', short: 'WNBA' }],
+    groups: [{ id: 'L', name: 'League', short: 'WNBA', conf: 'WNBA' }],
     slots,
     rounds: rounds(
       [
@@ -193,10 +193,10 @@ function nhl(): Template {
     const entrants: Source[] = [];
     [d1, d2].forEach(([d, dname], di) => {
       const div: Slot[] = [
-        { id: `${c}${d}1`, group: c, seed: 1 + di, label: `${d}1`, desc: `${dname} Division winner` },
+        { id: `${c}${d}1`, group: c, seed: 1 + di, label: `${d}1`, desc: `${dname} Division winner`, division: dname },
         { id: `${c}${d}WC`, group: c, seed: 7 + di, label: 'WC', desc: `Wild card facing the ${dname} winner` },
-        { id: `${c}${d}2`, group: c, seed: 3 + di, label: `${d}2`, desc: `${dname} 2nd place` },
-        { id: `${c}${d}3`, group: c, seed: 5 + di, label: `${d}3`, desc: `${dname} 3rd place` },
+        { id: `${c}${d}2`, group: c, seed: 3 + di, label: `${d}2`, desc: `${dname} 2nd place`, division: dname },
+        { id: `${c}${d}3`, group: c, seed: 5 + di, label: `${d}3`, desc: `${dname} 3rd place`, division: dname },
       ];
       slots.push(...div);
       entrants.push(...div.map((s) => seed(s.id)));
@@ -215,8 +215,8 @@ function nhl(): Template {
     description: '16 teams · divisional bracket with wild cards · four best-of-seven rounds',
     teamList: 'nhl',
     groups: [
-      { id: 'E', name: 'Eastern Conference', short: 'East' },
-      { id: 'W', name: 'Western Conference', short: 'West' },
+      { id: 'E', name: 'Eastern Conference', short: 'East', conf: 'East' },
+      { id: 'W', name: 'Western Conference', short: 'West', conf: 'West' },
     ],
     slots,
     rounds: rounds(
@@ -260,8 +260,8 @@ function mlb(): Template {
     description: '12 teams · Wild Card Series, Division Series, LCS, World Series',
     teamList: 'mlb',
     groups: [
-      { id: 'AL', name: 'American League', short: 'AL' },
-      { id: 'NL', name: 'National League', short: 'NL' },
+      { id: 'AL', name: 'American League', short: 'AL', conf: 'AL' },
+      { id: 'NL', name: 'National League', short: 'NL', conf: 'NL' },
     ],
     slots,
     rounds: rounds(
@@ -307,8 +307,8 @@ function mls(): Template {
     description: '18 teams · Wild Card, best-of-3 Round One, single-match rounds to MLS Cup',
     teamList: 'mls',
     groups: [
-      { id: 'E', name: 'Eastern Conference', short: 'East' },
-      { id: 'W', name: 'Western Conference', short: 'West' },
+      { id: 'E', name: 'Eastern Conference', short: 'East', conf: 'East' },
+      { id: 'W', name: 'Western Conference', short: 'West', conf: 'West' },
     ],
     slots,
     rounds: rounds(

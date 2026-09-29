@@ -260,7 +260,7 @@ function ScoringCard({ pool, template }: { pool: PoolDetail; template: Template 
         ))}
         {pool.scoring.seriesBonus > 0 && template.rounds.some((r) => r.bestOf > 1) && (
           <li>
-            <span>Exact series length</span>
+            <span>Exact series score (e.g. 4–2)</span>
             <strong>+{pool.scoring.seriesBonus}</strong>
           </li>
         )}

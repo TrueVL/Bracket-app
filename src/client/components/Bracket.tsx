@@ -16,10 +16,11 @@ export interface BracketProps {
   /** Actual results, used to grade picks in view/pick mode. */
   results?: Picks;
   mode: BracketMode;
-  /** Show / edit series lengths. */
+  /** Show / edit series scores (e.g. 4–2) for best-of-N rounds. */
   showGames?: boolean;
   onPick?: (matchId: string, slotId: string) => void;
-  onGames?: (matchId: string, games: number | null) => void;
+  /** Pick a series result in one go: the winner and how many games it took (null clears the score). */
+  onSeries?: (matchId: string, slotId: string, games: number | null) => void;
 }
 
 interface Ctx extends BracketProps {
@@ -79,14 +80,63 @@ function TeamRow({ ctx, match, slotId, src }: { ctx: Ctx; match: MatchDef; slotI
   );
 }
 
+/** "4–2": the winner's wins, then the loser's, for a series that took `games` games. */
+export function seriesScore(bestOf: number, games: number): string {
+  const need = Math.ceil(bestOf / 2);
+  return `${need}–${games - need}`;
+}
+
+/**
+ * One row of score buttons per team, e.g. for a best-of-3:
+ *   NYY [2–0] [2–1]
+ *   BOS [2–0] [2–1]
+ * A tap picks the winner and the series score together.
+ */
+function SeriesPicker({ ctx, match, a, b }: { ctx: Ctx; match: MatchDef; a: string; b: string }) {
+  const { template: t, picks, field, onSeries } = ctx;
+  const bestOf = t.rounds[match.round].bestOf;
+  const winner = picks.winners[match.id];
+  const games = picks.games[match.id];
+  return (
+    <div className="series" role="group" aria-label="Series score">
+      {[a, b].map((slot) => {
+        const team = field.teams[slot];
+        return (
+          <div key={slot} className="series-row">
+            <TeamBadge team={team} size="sm" />
+            {gameOptions(bestOf).map((g) => {
+              const on = winner === slot && games === g;
+              const score = seriesScore(bestOf, g);
+              return (
+                <button
+                  key={g}
+                  type="button"
+                  className={on ? 'on' : ''}
+                  aria-pressed={on}
+                  aria-label={`${team?.short ?? 'Team'} win ${score}`}
+                  title={`${team?.short ?? 'Team'} win ${score}`}
+                  onClick={() => onSeries!(match.id, slot, on ? null : g)}
+                >
+                  {score}
+                </button>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function MatchCard({ ctx, match, caption }: { ctx: Ctx; match: MatchDef; caption?: string }) {
-  const { template: t, picks, results, mode, showGames, onGames, field } = ctx;
+  const { template: t, picks, results, mode, showGames, onSeries, field } = ctx;
   const [a, b] = participants(t, match, picks.winners);
   const bestOf = t.rounds[match.round].bestOf;
-  const options = showGames ? gameOptions(bestOf) : [];
+  const isSeries = Boolean(showGames) && bestOf > 1;
   const winner = picks.winners[match.id];
   const games = picks.games[match.id];
   const actual = mode !== 'results' ? results?.winners[match.id] : undefined;
+  const actualGames = mode !== 'results' ? results?.games[match.id] : undefined;
   const status = mode !== 'results' ? ctx.statusOf(match.id) : null;
 
   return (
@@ -94,26 +144,16 @@ function MatchCard({ ctx, match, caption }: { ctx: Ctx; match: MatchDef; caption
       {caption && <div className="match-caption">{caption}</div>}
       <TeamRow ctx={ctx} match={match} slotId={a} src={match.a} />
       <TeamRow ctx={ctx} match={match} slotId={b} src={match.b} />
-      {options.length > 0 && winner && mode !== 'view' && onGames && (
-        <div className="games" role="group" aria-label="Series length">
-          <span>in</span>
-          {options.map((g) => (
-            <button
-              key={g}
-              type="button"
-              className={games === g ? 'on' : ''}
-              aria-pressed={games === g}
-              onClick={() => onGames(match.id, games === g ? null : g)}
-            >
-              {g}
-            </button>
-          ))}
+      {isSeries && mode !== 'view' && onSeries && a && b && <SeriesPicker ctx={ctx} match={match} a={a} b={b} />}
+      {isSeries && mode === 'view' && winner && games !== undefined && (
+        <div className="games-note">
+          Picked <TeamBadge team={field.teams[winner]} size="sm" /> {seriesScore(bestOf, games)}
         </div>
       )}
-      {options.length > 0 && mode === 'view' && games !== undefined && <div className="games-note">in {games} games</div>}
       {actual && status === 'wrong' && actual !== winner && (
         <div className="actual-note">
           Won by <TeamBadge team={field.teams[actual]} size="sm" /> {field.teams[actual]?.short}
+          {isSeries && actualGames !== undefined && ` ${seriesScore(bestOf, actualGames)}`}
         </div>
       )}
     </div>
@@ -136,10 +176,11 @@ function TreeView({ ctx }: { ctx: Ctx }) {
   const t = ctx.template;
   const layout = layoutBracket(t);
   const dense = Boolean(t.compact);
-  const games = Boolean(ctx.showGames) && t.rounds.some((r) => r.bestOf > 1);
+  const series = Boolean(ctx.showGames) && t.rounds.some((r) => r.bestOf > 1);
+  const pickers = series && ctx.mode !== 'view';
   const cardW = dense ? 148 : 168;
   const colW = dense ? 166 : 190;
-  const rowH = dense ? 60 : games ? 100 : 82;
+  const rowH = dense ? 60 : pickers ? 132 : series ? 96 : 82;
   const head = 34;
   const width = (layout.cols - 1) * colW + cardW;
   const cy = (id: string) => head + (layout.pos[id].y + 0.5) * rowH;
