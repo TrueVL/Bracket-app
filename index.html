@@ -7,9 +7,58 @@
     <meta name="theme-color" content="#0b1530" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>Bracket Club</title>
+    <style>
+      /* Shown only if the app hasn't started after a few seconds (React replaces #root when it does). */
+      #boot {
+        font-family: system-ui, sans-serif;
+        max-width: 560px;
+        margin: 60px auto;
+        padding: 0 16px;
+        line-height: 1.5;
+        color: #0f172a;
+        opacity: 0;
+        animation: boot-show 0s 3s forwards;
+      }
+      #boot.now {
+        animation: none;
+        opacity: 1;
+      }
+      #boot code {
+        background: #eef2f8;
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+      @keyframes boot-show {
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="boot">
+        <h1>Bracket Club is loading…</h1>
+        <p id="boot-reason">If this message doesn’t go away:</p>
+        <ul>
+          <li>Refresh the page (press <strong>F5</strong>).</li>
+          <li>Check that the window where you started the site is still open and shows no red errors.</li>
+          <li>The address bar should say <code>http://localhost:5173</code> (while developing) or the address of your hosted site.</li>
+        </ul>
+      </div>
+    </div>
+    <script>
+      // Opening index.html straight from the folder can't work: the site must be served by `npm run dev`.
+      if (location.protocol === 'file:') {
+        var boot = document.getElementById('boot');
+        boot.className = 'now';
+        boot.innerHTML =
+          '<h1>Start the site first</h1>' +
+          '<p>You opened <code>index.html</code> directly from the folder, which shows a blank page.</p>' +
+          '<ol><li>Double-click <code>start-windows.cmd</code> in the project folder, or run <code>npm run dev</code> in a terminal there.</li>' +
+          '<li>Then open <a href="http://localhost:5173">http://localhost:5173</a>.</li></ol>';
+      }
+    </script>
     <script type="module" src="/src/client/main.tsx"></script>
   </body>
 </html>

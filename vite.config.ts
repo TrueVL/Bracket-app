@@ -7,6 +7,11 @@ export default defineConfig({
     outDir: 'dist/client',
     emptyOutDir: true,
   },
+  // Pre-bundle the libraries at startup so the first page load doesn't have
+  // to wait for (and reload after) Vite discovering them.
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-dom/client', 'react/jsx-dev-runtime', 'react-router-dom'],
+  },
   server: {
     port: 5173,
     // Fail loudly instead of silently moving to another port.

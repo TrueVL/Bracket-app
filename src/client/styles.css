@@ -1621,3 +1621,12 @@ button.team-row:hover {
     display: none;
   }
 }
+
+.crash pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--surface-3);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
